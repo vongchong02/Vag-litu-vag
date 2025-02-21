@@ -1,0 +1,479 @@
+
+
+
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vag Litu Vag</title>
+    <style>
+         body, html {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        .menu, .game-over {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: rgb(15, 15, 15);
+    font-family: Arial, sans-serif;
+    width: 100vw;
+    height: 100vh;
+    background: url('start.png') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+        
+        button {
+            padding: 10px 20px;
+            font-size: 20px;
+            border: none;
+            border-radius: 10px;
+            background: gold;
+            color: black;
+            cursor: pointer;
+        }
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .control-btn {
+            width: 70px;
+            height: 70px;
+            background: gold;
+            border-radius: 50%;
+            border: none;
+            font-size: 30px;
+            font-weight: bold;
+            color: black;
+            cursor: pointer;
+        }
+    
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div class="menu" id="startMenu">
+        <h1>Developed By Sins Studio</h1>
+        <h1>Sponsored by P rnHub</h1>
+    </p> TIPC College এর অধ্যক্ষ লিটু কলেজ এর বিল্ডিং এর টাকা চুরি  করে প্লেনে করে পল্লাচ্ছে। তার সামনে অনেক বাঁধা পড়বে সেগুলো থেকে তাকে বাঁচতে সাহায্য করো। কলেজ এর টাকা খেয়ে খেয়ে তার ওজন বেশি হয়ে
+ গেছে। তাই তার প্লেনে এ তেল বেশি খাচ্ছে। তাই পালানোর পথে তেল সংগ্রহ করতে হবে কিন্তু।</p>
+
+        <button onclick="startGame()">Start Game</button>
+
+    </div>
+
+    <div class="game-over" id="gameOverMenu" style="display: none;">
+        <h1>F*cked By Johnny Sins Lol!</h1>
+        <p id="finalScore"></p>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+    <div class="controls">
+        <button class="control-btn" id="leftBtn"><</button>
+        <button class="control-btn" id="rightBtn">></button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const planeImg = new Image();
+        planeImg.src = 'litu.png';
+
+        const oilImg = new Image();
+     oilImg.src = 'oil.png';
+
+        const asteroidImg = new Image();
+        asteroidImg.src = 'cow.png';
+
+
+
+        const bulletSound = new Audio('bullet.wav');
+const dieSound = new Audio('die.wav');
+
+
+const bossSound = new Audio('boss.wav');
+
+
+        const bgImg = new Image();
+bgImg.src = 'bg.png'; // Start with first background
+
+const bgImages = ['bg.png', 'bg2.png', 'bg3.png']; // Array of background images
+let currentBgIndex = 0; // Track the current background index
+
+function toggleBackground() {
+    currentBgIndex = (currentBgIndex + 1) % bgImages.length; // Loop through 0 → 1 → 2 → 0
+    bgImg.src = bgImages[currentBgIndex]; // Change background image
+}
+
+// Toggle background every 15 seconds
+setInterval(toggleBackground, 15000);
+
+
+
+const bgMusic = new Audio('money.mp3');
+bgMusic.loop = true;  // Make it play continuously
+bgMusic.volume = 0.1; // Set low volume (adjust as needed)
+
+
+        const birdImg = new Image(); // Boss image
+        birdImg.src = 'bird.png';
+        const bossBulletImg = new Image(); // Boss bullet image
+        bossBulletImg.src = 'bullet.png';
+
+        let plane, asteroids, coins, bullets, score, oil, gameRunning;
+        let leftPressed = false, rightPressed = false;
+        let shootCooldown = 0;
+        let boss = null; // Boss object
+        let bossBullets = []; // Boss bullets
+        let playerHealth = 10; // Player health when boss appears
+
+        function initGame() {
+            plane = { x: canvas.width / 2, y: canvas.height - 200, width: 65, height: 90, speed: 6 }; // Adjusted plane position
+            asteroids = [];
+            coins = [];
+            bullets = [];
+            bossBullets = [];
+            score = 0;
+            oil = 1000;
+            gameRunning = false;
+            shootCooldown = 0;
+            boss = null; // Reset boss
+            playerHealth = 10; // Reset player health
+        }
+        function initGame2() {
+            plane = { x: canvas.width / 2, y: canvas.height - 200, width: 65, height: 90, speed: 6 }; // Adjusted plane position
+            asteroids = [];
+            coins = [];
+            bullets = [];
+            bossBullets = [];
+            gameRunning = true;
+            shootCooldown = 0;
+            boss = null; // Reset boss
+            playerHealth = 10; // Reset player health
+        }
+        function startGame() {
+    document.getElementById('startMenu').style.display = 'none';
+    document.getElementById('gameOverMenu').style.display = 'none';
+    initGame();
+    gameRunning = true;
+    bgMusic.play(); // Start background music
+    loop();
+}
+
+        function startGame2() {
+            
+            initGame2();
+            
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        function createAsteroid() {
+            const size = Math.random() * 60 + 30;
+            const speed = window.innerWidth < 768 ? 1.5 : 2.5;
+            asteroids.push({ x: Math.random() * canvas.width, y: -size, width: size, height: size, speed, health: 3 });
+        }
+
+       function createCoin() {
+    const size = 40; // Adjust the size of the oil image if needed
+    coins.push({ x: Math.random() * canvas.width, y: -size, width: size, height: size });
+}
+
+
+function shootBullet() {
+    bullets.push({ x: plane.x + plane.width / 2 - 5, y: plane.y, width: 10, height: 20, speed: 10 });
+
+    // Play bullet sound
+    bulletSound.currentTime = 0; // Reset the sound if it was already playing
+    bulletSound.play();
+}
+
+        function createBoss() {
+            boss = {
+                x: canvas.width / 2,
+                y: 50,
+                width: 250,
+                height: 200,
+                health: 20,
+                speed: 4,
+                moveDirection: 1, // 1 for right, -1 for left
+                shootCooldown: 0
+            };
+            // Clear all small obstacles when boss arrives (except coins)
+            asteroids = [];
+            // Play boss appearance sound
+    bossSound.currentTime = 0;  // Reset the sound if it was already playing
+    bossSound.play();
+        }
+
+        function bossShoot() {
+            if (boss && boss.shootCooldown <= 0) {
+                bossBullets.push({ x: boss.x + boss.width / 2 - 10, y: boss.y + boss.height, width: 25, height: 35, speed: 5 });
+                boss.shootCooldown = 60; // Cooldown for shooting
+            }
+        }
+
+        function update() {
+            if (!gameRunning) return;
+
+            score++;
+            oil -= 0.1;
+            if (oil <= 0) endGame();
+
+            if (leftPressed) plane.x = Math.max(plane.x - plane.speed, 0);
+if (rightPressed) plane.x = Math.min(plane.x + plane.speed, canvas.width - plane.width);
+
+
+            asteroids.forEach(a => a.y += a.speed);
+            coins.forEach(c => c.y += 4);
+            bullets.forEach(b => b.y -= b.speed);
+            bossBullets.forEach(b => b.y += b.speed);
+
+            asteroids = asteroids.filter(a => a.y < canvas.height);
+            coins = coins.filter(c => c.y < canvas.height);
+            bullets = bullets.filter(b => b.y > 0);
+            bossBullets = bossBullets.filter(b => b.y < canvas.height);
+
+            shootCooldown++;
+            if (shootCooldown >= 30) {
+                shootBullet();
+                shootCooldown = 0;
+            }
+
+            // Check for boss
+            if (score % 4000 === 0 && score !== 0 && !boss) {
+                createBoss();
+            }
+
+            if (boss) {
+                // Move boss
+                boss.x += boss.speed * boss.moveDirection;
+                if (boss.x <= 0 || boss.x + boss.width >= canvas.width) {
+                    boss.moveDirection *= -1;
+                }
+
+                // Boss shooting
+                boss.shootCooldown--;
+                bossShoot();
+
+                // Check for boss health
+                bullets.forEach((bullet, bulletIndex) => {
+                    if (bullet.x < boss.x + boss.width &&
+                        bullet.x + bullet.width > boss.x &&
+                        bullet.y < boss.y + boss.height &&
+                        bullet.y + bullet.height > boss.y) {
+                        boss.health--;
+                        bullets.splice(bulletIndex, 1);
+                        if (boss.health <= 0) {
+                            score += 1000;
+                            startGame2(); // Reset player health
+                        }
+                    }
+                });
+
+                // Check for boss bullets hitting player
+                bossBullets.forEach((bullet, bulletIndex) => {
+                    if (bullet.x < plane.x + plane.width &&
+                        bullet.x + bullet.width > plane.x &&
+                        bullet.y < plane.y + plane.height &&
+                        bullet.y + bullet.height > plane.y) {
+                        playerHealth--; // Reduce player health
+                        bossBullets.splice(bulletIndex, 1); // Remove boss bullet
+                        if (playerHealth <= 0) {
+                            endGame();
+                        }
+                    }
+                });
+            }
+
+            // Check for bullet collisions with asteroids
+            bullets.forEach((bullet, bulletIndex) => {
+                asteroids.forEach((asteroid, asteroidIndex) => {
+                    if (bullet.x < asteroid.x + asteroid.width &&
+                        bullet.x + bullet.width > asteroid.x &&
+                        bullet.y < asteroid.y + asteroid.height &&
+                        bullet.y + bullet.height > asteroid.y) {
+                        // Reduce asteroid health
+                        asteroid.health -= 1;
+                        if (asteroid.health <= 0) {
+                            asteroids.splice(asteroidIndex, 1); // Remove asteroid if health <= 0
+                            oil = Math.min(oil + 200, 9999999); // Add 100 oil (capped at 100)
+                        }
+                        bullets.splice(bulletIndex, 1); // Remove bullet
+                    }
+                });
+            });
+
+            // Check for asteroid collisions with player
+            asteroids.forEach((a, aIndex) => {
+                if (a.x < plane.x + plane.width &&
+                    a.x + a.width > plane.x &&
+                    a.y < plane.y + plane.height &&
+                    a.y + a.height > plane.y) {
+                    endGame();
+                }
+            });
+
+            // Check for coin collisions
+            coins.forEach((c, cIndex) => {
+    if (c.x < plane.x + plane.width &&
+        c.x + c.width > plane.x &&
+        c.y < plane.y + plane.height &&
+        c.y + c.height > plane.y) {
+        oil = Math.min(oil + 100, 99999999);
+        coins.splice(cIndex, 1);
+    }
+});
+
+            // Spawn asteroids and coins (only if boss is not present)
+            if (!boss) {
+                const isMobile = window.innerWidth < 768;
+                if (Math.random() < (isMobile ? 0.0099999 : 0.01)) createAsteroid();
+                if (Math.random() < 0.005) createCoin();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+
+            // Draw plane
+            ctx.save();
+            ctx.translate(plane.x + plane.width / 2, plane.y + plane.height / 2);
+            //ctx.rotate(-Math.PI / 2);
+            ctx.drawImage(planeImg, -plane.width / 2, -plane.height / 2, plane.width, plane.height);
+            ctx.restore();
+
+            // Draw asteroids
+            asteroids.forEach(a => ctx.drawImage(asteroidImg, a.x, a.y, a.width, a.height));
+
+            // Draw coins
+           coins.forEach(c => ctx.drawImage(oilImg, c.x, c.y, c.width, c.height));
+
+
+            // Draw bullets
+            ctx.fillStyle = 'red';
+            bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
+
+            // Draw boss
+            if (boss) {
+                ctx.drawImage(birdImg, boss.x, boss.y, boss.width, boss.height);
+                // Draw boss health bar
+                ctx.fillStyle = 'red';
+                ctx.fillRect(boss.x, boss.y - 20, boss.width, 10);
+                ctx.fillStyle = 'green';
+                ctx.fillRect(boss.x, boss.y - 20, (boss.width * boss.health) / 20, 10);
+
+                // Draw player health bar
+                ctx.fillStyle = 'red';
+                ctx.fillRect(10, 90, 200, 20);
+                ctx.fillStyle = 'green';
+                ctx.fillRect(10, 90, (200 * playerHealth) / 10, 20);
+            }
+
+            // Draw boss bullets
+            bossBullets.forEach(b => ctx.drawImage(bossBulletImg, b.x, b.y, b.width, b.height));
+
+            // Draw score and oil
+            ctx.fillStyle = 'black';
+            ctx.font = '24px Arial';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+            ctx.fillText(`Oil: ${Math.floor(oil)}`, 10, 60);
+        }
+
+        function endGame() {
+    gameRunning = false;
+    bgMusic.pause();  // Stop the background music
+    bgMusic.currentTime = 0;  // Reset it for next game
+
+    // Play die sound
+    dieSound.currentTime = 0;
+    dieSound.play();
+
+    document.getElementById('gameOverMenu').style.display = 'block';
+    document.getElementById('finalScore').textContent = `Your Score: ${score}`;
+}
+
+
+
+        function loop() {
+            update();
+            draw();
+            if (gameRunning) requestAnimationFrame(loop);
+        }
+
+        // Event listeners for controls
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+
+        leftBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    leftPressed = true;
+});
+leftBtn.addEventListener('touchend', () => leftPressed = false);
+
+rightBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    rightPressed = true;
+});
+rightBtn.addEventListener('touchend', () => rightPressed = false);
+
+
+
+        document.addEventListener('click', () => {
+    bgMusic.play().catch(() => {});
+}, { once: true });
+
+
+
+        leftBtn.addEventListener('mousedown', () => leftPressed = true);
+        leftBtn.addEventListener('mouseup', () => leftPressed = false);
+        leftBtn.addEventListener('touchstart', () => leftPressed = true);
+        leftBtn.addEventListener('touchend', () => leftPressed = false);
+
+        rightBtn.addEventListener('mousedown', () => rightPressed = true);
+        rightBtn.addEventListener('mouseup', () => rightPressed = false);
+        rightBtn.addEventListener('touchstart', () => rightPressed = true);
+        rightBtn.addEventListener('touchend', () => rightPressed = false);
+
+        // Initialize the game
+        document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') leftPressed = true;
+    if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') rightPressed = true;
+    if (event.key === ' ' && gameRunning) shootBullet(); // Spacebar to shoot
+});
+
+document.addEventListener('keyup', (event) => {
+    if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') leftPressed = false;
+    if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') rightPressed = false;
+});
+
+
+
+        initGame();
+    </script>
+</body>
+</html>
